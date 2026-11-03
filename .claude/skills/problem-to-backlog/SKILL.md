@@ -1,9 +1,9 @@
 ---
-name: problem-to-ready
+name: problem-to-backlog
 description: Turn an initiative's discovery output and technical design into milestones, customer value deliveries and requirements that are ready to implement, shaped by a domain persona and company knowledge, with human approval gates and deterministic checks. Use when a PO wants to go from a user problem to backlog-ready work.
 ---
 
-# Problem → Ready to implement
+# Problem → Backlog-ready work
 
 Alignment is the slowest part of getting from a user problem to work a team can build. This
 skill drafts the artifacts every group needs to agree on, already shaped by the domain's value

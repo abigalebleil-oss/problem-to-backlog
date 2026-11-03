@@ -1,4 +1,4 @@
-# problem-to-ready
+# problem-to-backlog
 
 **From a user problem to implementation-ready work, with the whole organization aligned.**
 
@@ -106,12 +106,12 @@ python checks/checks.py plan       examples/INIT-002/flow-cytometry/03_plan.md
 python checks/checks.py provenance examples/INIT-001/blood-bank/03_plan.md
 python checks/checks.py plan       examples/INIT-001/planted-failures/03_plan.md   # fails on purpose
 ```
-In Claude Code, run the skill with `/problem-to-ready`, or `/create-persona` to add a domain.
+In Claude Code, run the skill with `/problem-to-backlog`, or `/create-persona` to add a domain.
 Python 3.9+ standard library only.
 
 ## Repo map
 ```
-.claude/skills/problem-to-ready/SKILL.md   the skill (steps, gates, output format)
+.claude/skills/problem-to-backlog/SKILL.md   the skill (steps, gates, output format)
 .claude/skills/create-persona/SKILL.md     interview a domain expert into a persona pack
 knowledge/company.md, knowledge/sources/  company layer and its vetted sources
 personas/                                  domain layer (4 seeded + template)

@@ -1,4 +1,4 @@
-"""Deterministic guardrails for the problem-to-ready skill. No AI involved.
+"""Deterministic guardrails for the problem-to-backlog skill. No AI involved.
 
   python checks/checks.py persona <persona.md>    is a persona pack complete and well formed?
   python checks/checks.py intake  <01_intake.md>  Gate 1: may the skill move past intake?

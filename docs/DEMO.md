@@ -7,7 +7,7 @@ Keep the saved examples open in a second tab as backup if a live run is slow.
 | 0–1 | README problem section | Alignment, not writing, is the slow part. This drafts what every group must agree on, already shaped by their domain. |
 | 1–3 | `personas/blood-bank.md` next to `personas/middleware-connectivity.md`, then `personas/sources/blood-bank/` | Same template, different judgment. Value drivers rank the work; non-negotiables can't be weakened; required fields differ. Every line cites a vetted source: built once by the business team, reused by every PO. |
 | 3 | `checks.py persona personas/flow-cytometry.md`; vet S-FC-2 live (set the date and your name), re-run | My own domain notes aren't vetted yet, so the check says so. I vet them, and the persona is backed by vetted sources. |
-| 3–5 | Run `/problem-to-ready`, pick blood bank + consult middleware and QC | Persona selection. Consulted teams' constraints come along automatically. |
+| 3–5 | Run `/problem-to-backlog`, pick blood bank + consult middleware and QC | Persona selection. Consulted teams' constraints come along automatically. |
 | 5–7 | Intake output, then `checks.py intake` | It stops. Every persona question is asked; undecided design items become questions. The gate fails until blocking questions are answered. |
 | 7–9 | `checks.py plan` on the blood bank plan, then the middleware plan; `checks.py provenance` on one | Same inputs, different plans: safety-first ordering and lookback kept vs. interop-first and QC items deferred with a raised conflict. Provenance shows every rule traced to a vetted file. |
 | (backup) | `examples/INIT-002/flow-cytometry/03_plan.md` | Different domain, same machinery: reproducibility drives the order; setting transfer deferred for time to market. |

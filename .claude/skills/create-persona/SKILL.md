@@ -1,6 +1,6 @@
 ---
 name: create-persona
-description: Interview a domain product owner or subject-matter expert, save the vetted sources, and turn them into a reusable persona pack in personas/ that the problem-to-ready skill can use. Use when a team wants to "create your own" persona or refresh an existing one.
+description: Interview a domain product owner or subject-matter expert, save the vetted sources, and turn them into a reusable persona pack in personas/ that the problem-to-backlog skill can use. Use when a team wants to "create your own" persona or refresh an existing one.
 ---
 
 # Create a persona pack
