@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .DS_Store
 initiatives/*/runs/**/trace_matrix.csv
+.venv/
