@@ -7,9 +7,14 @@
               initiatives/<INIT-ID>*/feedback/*.md        verbatim quotes
 
 Anything an output cites must exist in one of these, or be an ID the output itself defines.
+
+Provenance: every ID line in a persona or in company knowledge ends with [src: S-...], and every
+source is registered in that file's "## Sources" section with a file, an owner and a vetting
+record. That is what lets the plan trace each citation back to vetted, local data.
 """
 
 import re
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,10 +26,18 @@ ID_LINE = re.compile(r"^-\s+([A-Z]+(?:-[A-Z]+)?-\d+):\s*(.+?)\s*$")
 PERSONA_ID = re.compile(r"^(U|VD|REG|C|Q)-([A-Z]{2,3})-(\d+)$")
 SECTION = re.compile(r"^##\s+(.+?)\s*$")
 
+SRC_TAG = re.compile(r"\s*\[src:\s*([^\]]+)\]\s*$")
+SOURCE_LINE = re.compile(
+    r"^-\s+(S-[A-Z]{2,3}-\d+):\s*(.+?)\s*\|\s*type:\s*(\w+)\s*\|\s*file:\s*(\S+)\s*"
+    r"\|\s*owner:\s*(.+?)\s*\|\s*vetted:\s*(.+?)\s*$")
+VETTED = re.compile(r"^(\d{4}-\d{2}-\d{2}) by (.+)$")
+SOURCE_TYPES = {"interview", "standard", "sop", "data", "experience", "document"}
+STALE_AFTER_DAYS = 365
+
 PERSONA_SECTIONS = [
     "Domain", "Users", "Value drivers (ranked)", "Regulatory and quality context",
     "Non-negotiable constraints", "Requirement fields", "Banned terms", "Always ask",
-    "Sign-offs", "Knowledge sources",
+    "Sign-offs", "Sources",
 ]
 COMPANY_BANNED = ["promptly", "quickly", "user-friendly", "appropriate", "as needed", "etc", "and/or"]
 
@@ -43,13 +56,53 @@ def sections(text):
 
 
 def id_lines(lines):
-    """Return {ID: text} for '- ID: text' lines, in order."""
+    """Return {ID: text} for '- ID: text' lines, in order. Any [src: ...] tag is stripped."""
+    return {k: v[0] for k, v in id_lines_with_sources(lines).items()}
+
+
+def id_lines_with_sources(lines):
+    """Return {ID: (text, [source IDs])} for '- ID: text [src: S-..]' lines."""
     found = {}
     for line in lines:
         m = ID_LINE.match(line)
-        if m:
-            found[m.group(1)] = m.group(2)
+        if m and not m.group(1).startswith("S-"):
+            text, srcs = m.group(2), []
+            tag = SRC_TAG.search(text)
+            if tag:
+                srcs = [s.strip() for s in tag.group(1).split(",") if s.strip()]
+                text = text[:tag.start()].rstrip()
+            found[m.group(1)] = (text, srcs)
     return found
+
+
+class Source:
+    def __init__(self, m, base_dir):
+        self.id, self.title, self.type, self.file, self.owner, self.vetted_raw = m.groups()
+        self.path = base_dir / self.file
+        v = VETTED.match(self.vetted_raw)
+        self.vetted_on = date.fromisoformat(v.group(1)) if v else None
+        self.vetted_by = v.group(2) if v else None
+
+    @property
+    def vetted(self):
+        return self.vetted_on is not None
+
+    @property
+    def stale(self):
+        return self.vetted and (date.today() - self.vetted_on).days > STALE_AFTER_DAYS
+
+    @property
+    def label(self):
+        return f"vetted {self.vetted_on} by {self.vetted_by}" if self.vetted else "NOT VETTED"
+
+
+def parse_sources(lines, base_dir):
+    out = {}
+    for line in lines:
+        m = SOURCE_LINE.match(line)
+        if m:
+            out[m.group(1)] = Source(m, base_dir)
+    return out
 
 
 def header_value(text, key):
@@ -67,10 +120,14 @@ class Persona:
         self.prefix = header_value(self.text, "prefix")
         self.status = header_value(self.text, "status")
         self.sections = sections(self.text)
-        self.ids = {}
+        self.ids, self.line_sources = {}, {}
         for name in ("Users", "Value drivers (ranked)", "Regulatory and quality context",
                      "Non-negotiable constraints", "Always ask"):
-            self.ids.update(id_lines(self.sections.get(name, [])))
+            for k, (text, srcs) in id_lines_with_sources(self.sections.get(name, [])).items():
+                self.ids[k] = text
+                self.line_sources[k] = srcs
+        self.sources = parse_sources(self.sections.get("Sources", []), self.path.parent)
+        self.source_lines = [l for l in self.sections.get("Sources", []) if l.startswith("- ")]
 
     def of_type(self, kind):
         return {k: v for k, v in self.ids.items() if k.startswith(kind + "-")}
@@ -117,6 +174,13 @@ def list_personas():
 
 def company_ids():
     return id_lines(COMPANY_FILE.read_text().splitlines())
+
+
+def company_provenance():
+    """Return ({K-ID: (text, [src])}, {S-ID: Source}) for company knowledge."""
+    secs = sections(COMPANY_FILE.read_text())
+    lines = [l for name, ls in secs.items() if name != "Sources" for l in ls]
+    return id_lines_with_sources(lines), parse_sources(secs.get("Sources", []), COMPANY_FILE.parent)
 
 
 class Initiative:

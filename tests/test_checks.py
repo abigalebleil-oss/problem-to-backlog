@@ -138,3 +138,73 @@ def test_review_log_blocks_until_every_item_decided(tmp_path):
         w.writeheader()
         w.writerows(rows)
     assert review.status(log) == 0
+
+
+# ---------- provenance ----------
+
+def _persona_copy(tmp_path, pid, edit):
+    """Copy a persona and its sources into a temp personas/ folder, apply edit, return the path."""
+    import shutil
+    d = tmp_path / "personas"
+    shutil.copytree(ROOT / "personas" / "sources", d / "sources")
+    f = d / f"{pid}.md"
+    f.write_text(edit((ROOT / "personas" / f"{pid}.md").read_text()))
+    return f
+
+
+def test_every_persona_line_cites_a_registered_source():
+    for p in kb.list_personas():
+        for lid, srcs in p.line_sources.items():
+            assert srcs and all(s in p.sources for s in srcs), (p.id, lid)
+        for s in p.sources.values():
+            assert s.path.exists(), s.file
+
+
+def test_line_without_source_fails(tmp_path):
+    f = _persona_copy(tmp_path, "blood-bank",
+                      lambda t: t.replace("(bench technologist, often alone on nights) [src: S-BB-2]",
+                                          "(bench technologist, often alone on nights)"))
+    assert checks.check_persona(f) == 1
+
+
+def test_unregistered_or_missing_source_fails(tmp_path):
+    f = _persona_copy(tmp_path, "blood-bank", lambda t: t.replace("[src: S-BB-1]", "[src: S-BB-9]", 1))
+    assert checks.check_persona(f) == 1
+    f = _persona_copy(tmp_path / "b", "blood-bank",
+                      lambda t: t.replace("S-BB-3_discrepancy-sop.md", "S-BB-3_missing.md"))
+    assert checks.check_persona(f) == 1
+
+
+def test_validated_persona_with_unvetted_source_fails(tmp_path):
+    f = _persona_copy(tmp_path, "blood-bank",
+                      lambda t: t.replace("vetted: 2026-10-20 by R. Ortiz, interviewee (fictional)", "vetted: PENDING"))
+    assert checks.check_persona(f) == 1
+
+
+def test_plan_flags_reliance_on_unvetted_sources():
+    _, queue, _ = plan_problems(EX.parent / "INIT-002" / "flow-cytometry" / "03_plan.md")
+    assert any("persona flow-cytometry" in q and "S-FC-2" in q for q in queue)
+    _, queue, _ = plan_problems(EX / "blood-bank" / "03_plan.md")
+    assert not any(q.startswith("persona blood-bank") for q in queue)
+
+
+def test_company_knowledge_lines_have_vetted_sources():
+    lines, sources = kb.company_provenance()
+    assert lines and all(srcs and all(sources[s].vetted for s in srcs) for _, srcs in lines.values())
+
+
+def test_provenance_command_runs(capsys):
+    assert checks.provenance(EX / "blood-bank" / "03_plan.md") == 0
+    out = capsys.readouterr().out
+    assert "S-BB-3" in out and "rest only on vetted sources" in out
+
+
+# ---------- flow cytometry initiative ----------
+
+def test_flow_cytometry_intake_and_plan_pass():
+    flow = EX.parent / "INIT-002" / "flow-cytometry"
+    assert checks.check_intake(flow / "01_intake.md") == 0
+    problems, queue, stats = plan_problems(flow / "03_plan.md")
+    assert problems == []
+    assert "reproducibility-impact" in stats["primary"].required_fields
+    assert any("D-3 deferred" in q for q in queue)

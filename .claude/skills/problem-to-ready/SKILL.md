@@ -21,14 +21,17 @@ anything approved.
 | Initiative | `initiatives/<INIT>/discovery.md`, `design.md`, `feedback/*.md` | `F-n`, `D-n`, `DC-n`, verbatim quotes |
 
 If a fact is not in these files, it is an **assumption** (list it) or a **question** (ask it).
-Never invent an ID. Never paraphrase inside quotation marks.
+Never invent an ID. Never paraphrase inside quotation marks. Do not fill gaps with general
+knowledge about the domain: the persona and company files exist so that you draft from vetted,
+local knowledge instead. Every company and persona line names the vetted source it came from.
 
 Write all outputs to `initiatives/<INIT>/runs/<primary-persona>/`.
 
 ---
 
 ## Step 0 — Select your persona
-1. List the personas in `personas/` (skip `_template.md`) with their title and top value driver.
+1. List the personas in `personas/` (skip `_template.md`) with their title, top value driver,
+   status, and how many of their sources are vetted (`python checks/checks.py persona <file>`).
 2. Ask the user (use AskUserQuestion if available):
    - **Primary persona**: whose product this is. Their value drivers rank the work and their
      requirement fields are mandatory.
@@ -37,6 +40,8 @@ Write all outputs to `initiatives/<INIT>/runs/<primary-persona>/`.
    - Or **Create your own**: run the `create-persona` skill, then return here.
 3. Ask which initiative to run (folders in `initiatives/`).
 4. Read every selected persona, `knowledge/company.md`, and all initiative files.
+5. If a selected persona has unvetted sources, say so before continuing: the plan can be
+   drafted, but citations resting on those sources will be flagged until the owner vets them.
 
 ## Step 1 — Intake → `01_intake.md` · **GATE 1**
 Do not draft any plan yet. Produce only:
@@ -150,9 +155,10 @@ Rules:
 1. Run `python checks/checks.py plan <file>`. If it fails, fix the plan and re-run, at most twice.
    If it still fails, stop and show the user what is failing and why. Do not hide failures.
 2. Run `python checks/checks.py trace <file>` to export the traceability matrix.
-3. Run `python checks/review.py start <file>` to create the review log.
-4. Tell the user, in this order: the review queue from the check (assumptions, conflicts,
-   proposed values, deferrals), how the persona shaped the plan (value drivers per milestone),
-   and who must sign off (the `Sign-offs` of each selected persona).
+3. Run `python checks/checks.py provenance <file>` to show which vetted sources the plan rests on.
+4. Run `python checks/review.py start <file>` to create the review log.
+5. Tell the user, in this order: the review queue from the check (assumptions, conflicts,
+   proposed values, deferrals, unvetted sources), how the persona shaped the plan (value drivers
+   per milestone), and who must sign off (the `Sign-offs` of each selected persona).
 
 Nothing enters the backlog until `python checks/review.py status <review.csv>` passes.

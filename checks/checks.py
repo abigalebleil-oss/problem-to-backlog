@@ -4,6 +4,7 @@
   python checks/checks.py intake  <01_intake.md>  Gate 1: may the skill move past intake?
   python checks/checks.py plan    <03_plan.md>    is the plan grounded, complete and ready for human review?
   python checks/checks.py trace   <03_plan.md> [out.csv]   export the traceability matrix
+  python checks/checks.py provenance <01_intake.md|03_plan.md>  which vetted sources each citation rests on
 
 Exit code 0 = pass. Exit code 1 = problems found (the AI regenerates or a human decides).
 A pass never means "approved". It means "worth a human's time to review".
@@ -163,10 +164,50 @@ def check_persona(path):
     prefixes = Counter(x.prefix for x in kb.list_personas())
     if p.prefix and prefixes[p.prefix] > 1 and not Path(path).name.startswith("_"):
         problems.append(f"prefix {p.prefix} is used by more than one persona")
+
+    # provenance: every line cites a registered, existing, owned source
+    queue = []
+    if not p.sources:
+        problems.append("no sources registered under '## Sources'")
+    for line in p.source_lines:
+        if not kb.SOURCE_LINE.match(line):
+            problems.append(f"source line not in the required format: {line[:70]}")
+    for sid, s in p.sources.items():
+        if p.prefix and not sid.startswith(f"S-{p.prefix}-"):
+            problems.append(f"{sid}: prefix does not match persona prefix {p.prefix}")
+        if s.type not in kb.SOURCE_TYPES:
+            problems.append(f"{sid}: type '{s.type}' must be one of {', '.join(sorted(kb.SOURCE_TYPES))}")
+        if not s.path.exists():
+            problems.append(f"{sid}: file {s.file} does not exist")
+        if not s.vetted and s.vetted_raw.upper() != "PENDING":
+            problems.append(f"{sid}: vetted must be 'YYYY-MM-DD by <name/role>' or PENDING")
+        elif not s.vetted:
+            queue.append(f"{sid} not vetted yet ({s.title}); owner: {s.owner}")
+        elif s.stale:
+            queue.append(f"{sid} last vetted {s.vetted_on}, over {kb.STALE_AFTER_DAYS} days ago; re-vet with {s.owner}")
+    cited = set()
+    for lid, srcs in p.line_sources.items():
+        if not srcs:
+            problems.append(f"{lid}: no [src: ...] tag; every persona line must name its source")
+        for sid in srcs:
+            cited.add(sid)
+            if sid not in p.sources:
+                problems.append(f"{lid}: cites {sid}, which is not registered under Sources")
+    for sid in p.sources:
+        if sid not in cited:
+            queue.append(f"{sid} is registered but no persona line cites it")
+    unvetted = [sid for sid, s in p.sources.items() if not s.vetted]
+    if (p.status or "").lower().startswith("validated") and unvetted:
+        problems.append(f"status is validated but {', '.join(unvetted)} not vetted")
+
+    vetted_lines = sum(1 for srcs in p.line_sources.values()
+                       if srcs and all(p.sources.get(s) and p.sources[s].vetted for s in srcs))
     summary = (f"  {p.title or '?'} · {len(p.users)} users · {len(p.value_drivers)} value drivers · "
                f"{len(p.constraints)} constraints · {len(p.questions)} questions · "
-               f"fields: {', '.join(p.required_fields) or '-'}")
-    return report(f"Checking persona {path}", problems, extra=summary)
+               f"fields: {', '.join(p.required_fields) or '-'}\n"
+               f"  Status: {p.status} · {len(p.sources)} sources · "
+               f"{vetted_lines}/{len(p.line_sources)} lines rest only on vetted sources")
+    return report(f"Checking persona {path}", problems, queue, summary)
 
 
 # ---------- intake (Gate 1) ----------
@@ -369,6 +410,16 @@ def analyze_plan(text):
     if not [l for l in section_lines(text, "Decision log") if l.strip().startswith("- DEC-")]:
         problems.append("no Decision log entries. Every plan explains its main choices")
 
+    for p in personas:
+        cited = {i for i in set(EXTERNAL_ID.findall(text)) if i in p.ids}
+        weak = sorted(i for i in cited
+                      if not all(p.sources.get(s) and p.sources[s].vetted for s in p.line_sources.get(i, [])))
+        if weak:
+            pending = sorted({s for i in weak for s in p.line_sources[i]
+                              if not (p.sources.get(s) and p.sources[s].vetted)})
+            queue.append(f"persona {p.id}: {len(weak)} cited line(s) rest on unvetted source(s) "
+                         f"{', '.join(pending)}. Vet before sign-off")
+
     stats = {"header": header, "primary": primary, "milestones": milestones, "cvds": cvds,
              "reqs": reqs, "initiative": initiative}
     return header, problems, queue, stats
@@ -431,8 +482,60 @@ def export_trace(path, out=None):
     return 0
 
 
+# ---------- provenance ----------
+
+def provenance(path):
+    """Show, for every company or persona ID an output cites, the source it came from."""
+    text = Path(path).read_text()
+    header = parse_header(text)
+    if not header:
+        print("missing '# Intake:' or '# Delivery plan:' header")
+        return 1
+    problems = []
+    initiative, personas = load_context(header, problems)
+    company_lines, company_sources = kb.company_provenance()
+    owners = [("company", company_lines, company_sources)]
+    for p in personas:
+        owners.append((p.id, {k: (p.ids[k], p.line_sources[k]) for k in p.ids}, p.sources))
+
+    cited = []
+    for i in dict.fromkeys(EXTERNAL_ID.findall(text)):
+        for owner, lines, sources in owners:
+            if i in lines:
+                cited.append((i, owner, lines[i][1], sources))
+                break
+
+    by_source, unvetted_ids = {}, []
+    for i, owner, srcs, sources in cited:
+        for s in srcs or ["(none)"]:
+            by_source.setdefault((owner, s), []).append(i)
+        if not srcs or not all(sources.get(s) and sources[s].vetted for s in srcs):
+            unvetted_ids.append(i)
+
+    init_ids = [i for i in dict.fromkeys(EXTERNAL_ID.findall(text)) if i in initiative.ids]
+    print(f"Provenance for {path}")
+    print(f"  {len(cited)} company/persona citations · {len(init_ids)} initiative citations "
+          f"(discovery and design for {header['init']})\n")
+    all_sources = {(o, sid): s for o, _, srcs in owners for sid, s in srcs.items()}
+    for (owner, sid), ids in sorted(by_source.items()):
+        s = all_sources.get((owner, sid))
+        if s is None:
+            print(f"  {sid:<8} UNREGISTERED SOURCE                              ← {', '.join(ids)}")
+            continue
+        print(f"  {sid:<8} {s.type:<10} {s.title[:44]:<44} {s.label}")
+        print(f"  {'':<8} {'':<10} file: {(s.path.relative_to(kb.ROOT))}")
+        print(f"  {'':<8} {'':<10} cited via: {', '.join(ids)}")
+    vetted = len(cited) - len(unvetted_ids)
+    print(f"\n  {vetted}/{len(cited)} company/persona citations rest only on vetted sources.")
+    if unvetted_ids:
+        print(f"  Not yet vetted: {', '.join(unvetted_ids)}. Vet these sources before sign-off.")
+    for p in problems:
+        print(f"  - {p}")
+    return 1 if problems else 0
+
+
 def main(argv):
-    if len(argv) < 3 or argv[1] not in {"persona", "intake", "plan", "trace"}:
+    if len(argv) < 3 or argv[1] not in {"persona", "intake", "plan", "trace", "provenance"}:
         print(__doc__)
         return 2
     cmd, path = argv[1], argv[2]
@@ -442,6 +545,8 @@ def main(argv):
         return check_intake(path)
     if cmd == "plan":
         return check_plan(path)
+    if cmd == "provenance":
+        return provenance(path)
     return export_trace(path, argv[3] if len(argv) > 3 else None)
 
 
