@@ -1,4 +1,4 @@
-# S-BB-3 · Serologic discrepancy resolution SOP, section 3 (fictional customer site)
+# S-CA-3 · Serologic discrepancy resolution SOP, section 3 (fictional customer site)
 
 Type: SOP excerpt from a fictional customer site, shared with permission for product design.
 

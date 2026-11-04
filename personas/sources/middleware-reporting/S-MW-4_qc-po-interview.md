@@ -1,6 +1,6 @@
-# S-QC-2 · Interview with a clinical lab QC software product owner (fictional)
+# S-MW-4 · Interview with a result-reporting and QC product owner (fictional)
 
-Type: interview. Synthetic notes for the sandbox. Interviewee: "M. Chen", PO, QC software, 6 years (fictional).
+Type: interview. Synthetic notes for the sandbox. Interviewee: "M. Chen", PO, middleware result release and QC, 6 years (fictional).
 
 ## Who uses it
 - "Bench techs run controls and react to flags."

@@ -1,16 +1,16 @@
-# S-BB-2 · Interview with a blood bank software product owner (fictional)
+# S-CA-2 · Interview with a clinical blood analyzer product owner (fictional)
 
 Type: interview. Synthetic interview notes for the sandbox, captured with the create-persona
-skill. Interviewee: "R. Ortiz", Senior PO, blood bank middleware, 9 years (fictional).
+skill. Interviewee: "R. Ortiz", Senior PO, blood typing analyzers and software, 9 years (fictional).
 
 ## Who uses it
 - "The bench tech is the main user, and on nights they're usually alone."
-- "The transfusion service supervisor owns the SOPs and answers to inspectors."
+- "The blood typing lab supervisor owns the SOPs and answers to inspectors."
 - "The medical director signs off on anything that changes how discrepancies are handled."
 - "Clinicians never see our screens, but they're the ones waiting. Surgery, trauma, L&D."
 
 ## What customers judge us on (ranked)
-1. "Patient safety, full stop. The right blood to the right patient. No release we can't defend."
+1. "Patient safety, full stop. The right blood type on the right patient's record. No release we can't defend."
 2. "Turnaround time from collection to crossmatch-ready. That's the number labs report up."
 3. "Inspection readiness. Every manual decision has a name, a time and a reason."
 4. "Workload. Fewer lookups and re-keying per sample."
@@ -32,7 +32,7 @@ skill. Interviewee: "R. Ortiz", Senior PO, blood bank middleware, 9 years (ficti
 
 ## What I ask first
 - "Who's allowed to resolve which hold type alone, and which need a second person?"
-- "What turnaround target, for which priority — routine, pre-op, STAT, massive transfusion?"
+- "What turnaround target, for which priority — routine, pre-op, STAT, emergency release?"
 - "Does this touch interpretation, release logic or patient ID? Then what's the regulatory path?"
 - "How does the site validate it before go-live?"
 

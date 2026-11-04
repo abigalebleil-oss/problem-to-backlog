@@ -1,6 +1,6 @@
 # Technical software design: INIT-001 — Held typing results
 
-Source: synthetic design notes for a fictional blood bank middleware product ("TypeBridge").
+Source: synthetic design notes for a fictional blood typing middleware product ("TypeBridge") that sits between the analyzer and the LIS.
 
 ## Current behavior
 1. The typing analyzer sends results over ASTM (CLSI LIS2). Its interpretation is final and cleared;

@@ -1,8 +1,8 @@
-# Feedback — Night-shift blood bank technologist (fictional)
+# Feedback — Night-shift blood typing technologist (fictional)
 
 Source: synthetic interview notes. All people, sites and numbers are fictional.
 
-- "At night it's just me in the blood bank. When the analyzer holds a type and screen, the
+- "At night it's just me on the blood typing bench. When the analyzer holds a type and screen, the
   middleware worklist just says HOLD. I have to walk over to the analyzer screen to see if it's a
   forward-reverse discrepancy, a weak reaction or a QC problem."
 - "That walk-and-look is maybe five to ten minutes each time, and I get six or eight holds on a

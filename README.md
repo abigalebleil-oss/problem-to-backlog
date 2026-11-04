@@ -38,24 +38,24 @@ have to agree before work enters a backlog.
 | Layer | Lives in | Owned by | Example |
 |---|---|---|---|
 | **Company** | `knowledge/company.md` | Product ops | Definition of ready, release calendar, "shall" standard |
-| **Persona** (domain) | `personas/*.md` | Each domain's POs | Blood bank: safety > turnaround; never auto-resolve a discrepancy |
+| **Persona** (domain) | `personas/*.md` | Each domain's POs | Clinical analyzer: safety > turnaround; never auto-resolve a discrepancy |
 | **Initiative** | `initiatives/<INIT>/` | The PO running it | Discovery findings, design elements, interview quotes |
 
-Every line the AI may rely on has an ID (`K-4`, `VD-BB-1`, `C-MW-2`, `F-03`, `D-5`). If something
+Every line the AI may rely on has an ID (`K-4`, `VD-CA-1`, `C-MW-2`, `F-03`, `D-5`). If something
 isn't in these files, the AI must list it as an assumption or ask about it.
 
 ### Vetted, local sources: do the work once, reuse it everywhere
 Every company and persona line ends with the source it came from, for example
-`- C-BB-1: An ABO/Rh discrepancy is never resolved ... automatically by software [src: S-BB-2, S-BB-3]`.
+`- C-CA-1: An ABO/Rh discrepancy is never resolved ... automatically by software [src: S-CA-2, S-CA-3]`.
 Each source is a saved file (interview notes, SOP excerpt, standards summary, support data) with
 an owner and a vetting record:
 
 ```
-personas/blood-bank.md                 the persona: what the skill reads and cites
-personas/sources/blood-bank/
-  S-BB-1_standards.md                  standard   vetted by regulatory affairs
-  S-BB-2_po-interview.md               interview  vetted by the interviewee
-  S-BB-3_discrepancy-sop.md            sop        vetted by the customer site supervisor
+personas/clinical-analyzer.md          the persona: what the skill reads and cites
+personas/sources/clinical-analyzer/
+  S-CA-1_standards.md                  standard   vetted by regulatory affairs
+  S-CA-2_po-interview.md               interview  vetted by the interviewee
+  S-CA-3_discrepancy-sop.md            sop        vetted by the customer site supervisor
 ```
 
 A business team builds this once with the `create-persona` skill. After that, every PO in the
@@ -71,13 +71,12 @@ is less room for hallucination and fewer assumptions to check. The checks enforc
 | Persona | Top value driver | A non-negotiable it brings |
 |---|---|---|
 | `flow-cytometry` | Reproducibility across days, operators, instruments, sites | Older experiments reopen with their original results |
-| `clinical-qc` | QC failures stop reporting before results reach clinicians | QC rule changes need director approval |
-| `middleware-connectivity` | Interoperability with every supported LIS | New outbound messages are opt-in per interface |
-| `blood-bank` | Right blood to the right patient | A discrepancy is never resolved by software |
+| `clinical-analyzer` (blood typing analyzers) | The right blood type on the right patient's record | A typing discrepancy is never resolved by software |
+| `middleware-reporting` (analyzer → LIS → clinician) | Interoperability with every supported LIS; only verified results reach clinicians | Results run after a QC failure are never reported until QC is acceptable |
 | `_template.md` / `create-persona` skill | **Create your own** by being interviewed | |
 
-Seeded status: `blood-bank` is validated (all sources vetted, by fictional reviewers). The other
-three are drafts with one unvetted source each, so the review queue shows what that looks like.
+Seeded status: `clinical-analyzer` is validated (all sources vetted, by fictional reviewers). The other
+two are drafts with unvetted interview notes, so the review queue shows what that looks like.
 
 A run picks a **primary persona** (ranks the work, sets mandatory requirement fields) and any
 **consulted personas** (adjacent teams whose constraints the plan must honor). Consulted personas
@@ -99,11 +98,11 @@ The check never approves anything. A pass means "worth a human's time", and it a
 ```bash
 python -m pytest -q                                                            # 21 tests
 python checks/checks.py persona    personas/flow-cytometry.md
-python checks/checks.py intake     examples/INIT-001/blood-bank/01_intake.md
-python checks/checks.py plan       examples/INIT-001/blood-bank/03_plan.md
-python checks/checks.py plan       examples/INIT-001/middleware-connectivity/03_plan.md
+python checks/checks.py intake     examples/INIT-001/clinical-analyzer/01_intake.md
+python checks/checks.py plan       examples/INIT-001/clinical-analyzer/03_plan.md
+python checks/checks.py plan       examples/INIT-001/middleware-reporting/03_plan.md
 python checks/checks.py plan       examples/INIT-002/flow-cytometry/03_plan.md
-python checks/checks.py provenance examples/INIT-001/blood-bank/03_plan.md
+python checks/checks.py provenance examples/INIT-001/clinical-analyzer/03_plan.md
 python checks/checks.py plan       examples/INIT-001/planted-failures/03_plan.md   # fails on purpose
 ```
 In Claude Code, run the skill with `/problem-to-backlog`, or `/create-persona` to add a domain.
@@ -114,13 +113,13 @@ Python 3.9+ standard library only.
 .claude/skills/problem-to-backlog/SKILL.md   the skill (steps, gates, output format)
 .claude/skills/create-persona/SKILL.md     interview a domain expert into a persona pack
 knowledge/company.md, knowledge/sources/  company layer and its vetted sources
-personas/                                  domain layer (4 seeded + template)
+personas/                                  domain layer (3 seeded + template)
 personas/sources/<persona>/                the vetted sources each persona was built from
 initiatives/INIT-001-typing-holds/         blood typing holds: feedback, discovery, design
 initiatives/INIT-002-cross-instrument-reproducibility/   flow cytometry: feedback, discovery, design
 checks/checks.py                           persona, intake (Gate 1), plan, trace, provenance
 checks/review.py                           human review log and acceptance metrics
-examples/INIT-001/                         blood bank, middleware, planted failures
+examples/INIT-001/                         clinical analyzer, middleware, planted failures
 examples/INIT-002/                         flow cytometry
 tests/                                     guardrail tests
 docs/DEMO.md                               live demo script
@@ -129,7 +128,8 @@ docs/DEMO.md                               live demo script
 ## What code can't catch
 `examples/INIT-001/planted-failures/03_plan.md` includes a requirement that auto-resolves ABO
 discrepancies. It is well formed, cites real IDs and claims to satisfy the "never auto-resolve"
-constraint, so every check passes it. A test documents that on purpose: deterministic checks prove
+constraint, so it passes every check that applies to it (the file as a whole still fails, on the
+other planted errors). A test documents that on purpose: deterministic checks prove
 an output is **grounded and complete**; only a qualified human can judge whether it is **right**.
 That is why the gates exist.
 

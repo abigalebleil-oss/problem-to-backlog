@@ -7,6 +7,7 @@ Type: interview. Synthetic notes for the sandbox. Interviewee: "J. Park", PO, la
 - "Bench techs work the worklist all shift."
 - "Field application specialists install and validate every interface."
 - "Lab IT and security review us before anything connects."
+- "Clinicians never log in to us, but every result they read in the EHR came through us."
 
 ## What customers judge us on (ranked)
 1. "Interoperability. Every supported LIS and engine accepts our messages without custom work."

@@ -1,4 +1,4 @@
-# S-QC-1 · QC regulations and standards summary
+# S-MW-3 · QC and result-release regulations summary
 
 Type: standard summary. Written from public sources for the sandbox.
 

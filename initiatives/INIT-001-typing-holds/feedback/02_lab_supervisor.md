@@ -1,4 +1,4 @@
-# Feedback — Transfusion service supervisor (fictional)
+# Feedback — Blood typing lab supervisor (fictional)
 
 Source: synthetic interview notes. All people, sites and numbers are fictional.
 
