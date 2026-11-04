@@ -6,7 +6,7 @@ An AI skill plus deterministic guardrails that turns discovery output and a tech
 milestones, customer value deliveries and requirements, shaped by each domain's expertise and the
 company's standards, with humans approving at every gate.
 
-> Sandbox version of a skill I built and use as a Software Product Owner at Waters (flow cytometry).
+> Sandbox version of a skill I built and use as a Software Product Owner at my current company.
 > Everything here is synthetic: the "TypeBridge" product, people, sites and numbers are fictional.
 
 ---
