@@ -26,10 +26,13 @@ people who must decide.
 **Who it's for:** product owners, and the engineering, QA, regulatory and partner-team reviewers who
 have to agree before work enters a backlog.
 
-**How we'll know it works:**
+**How we'll know it works:** throughput first, then quality.
 - Cycle time from discovery complete to backlog-ready
 - Review rounds before sign-off
 - Share of drafted items accepted without edit (from the review log)
+- Post-start changes to story descriptions and acceptance criteria
+- Story split and reopen rates
+- PO time spent per milestone
 - Defects traced to requirement gaps
 
 ## How it works
@@ -96,14 +99,14 @@ The check never approves anything. A pass means "worth a human's time", and it a
 
 ## Quick start
 ```bash
-python -m pytest -q                                                            # 21 tests
-python checks/checks.py persona    personas/flow-cytometry.md
-python checks/checks.py intake     examples/INIT-001/clinical-analyzer/01_intake.md
-python checks/checks.py plan       examples/INIT-001/clinical-analyzer/03_plan.md
-python checks/checks.py plan       examples/INIT-001/middleware-reporting/03_plan.md
-python checks/checks.py plan       examples/INIT-002/flow-cytometry/03_plan.md
-python checks/checks.py provenance examples/INIT-001/clinical-analyzer/03_plan.md
-python checks/checks.py plan       examples/INIT-001/planted-failures/03_plan.md   # fails on purpose
+python3 -m pytest -q                                                           # 21 tests
+python3 checks/checks.py persona    personas/flow-cytometry.md
+python3 checks/checks.py intake     examples/INIT-001/clinical-analyzer/01_intake.md
+python3 checks/checks.py plan       examples/INIT-001/clinical-analyzer/03_plan.md
+python3 checks/checks.py plan       examples/INIT-001/middleware-reporting/03_plan.md
+python3 checks/checks.py plan       examples/INIT-002/flow-cytometry/03_plan.md
+python3 checks/checks.py provenance examples/INIT-001/clinical-analyzer/03_plan.md
+python3 checks/checks.py plan       examples/INIT-001/planted-failures/03_plan.md   # fails on purpose
 ```
 In Claude Code, run the skill with `/problem-to-backlog`, or `/create-persona` to add a domain.
 Python 3.9+ standard library only.
