@@ -42,7 +42,7 @@ have to agree before work enters a backlog.
 |---|---|---|---|
 | **Company** | `knowledge/company.md` | Product ops | Definition of ready, release calendar, "shall" standard |
 | **Persona** (domain) | `personas/*.md` | Each domain's POs | Clinical analyzer: safety > turnaround; never auto-resolve a discrepancy |
-| **Initiative** | `initiatives/<INIT>/` | The PO running it | Discovery findings, design elements, interview quotes |
+| **Initiative** | `initiatives/<INIT>/` | The PO running it | Whatever the PO wants requirements for: their own brief, plus discovery and design when they exist |
 
 Every line the AI may rely on has an ID (`K-4`, `VD-CA-1`, `C-MW-2`, `F-03`, `D-5`). If something
 isn't in these files, the AI must list it as an assumption or ask about it.
@@ -88,7 +88,7 @@ are how cross-team alignment happens before the first meeting, not after.
 ### The flow: AI drafts, code checks, people decide
 | Step | AI produces | Deterministic check | Human gate |
 |---|---|---|---|
-| 0 Select persona | Persona menu with vetting status | `checks.py persona`: every line sourced, sources vetted | PO picks primary and consulted |
+| 0 Set up | Persona menu (or build your own), initiative menu (or start a new one), extra guardrails, then "What are we trying to write requirements for?" | `checks.py persona`: every line sourced, sources vetted | PO picks personas, adds guardrails, states the work in their own words |
 | 1 Intake | Questions (every persona "always ask" + gaps), assumptions | `checks.py intake`: fails on any unanswered blocking question | **Gate 1:** PO answers, confirms or rejects assumptions |
 | 2 Milestones | Milestones ordered by the persona's value drivers | | **Gate 2:** PO and dev lead approve scope |
 | 3 Plan | CVDs, requirements, alignment, decision log | `checks.py plan`: citations, verbatim quotes, coverage, persona fields, banned terms, every constraint aligned | |
@@ -120,10 +120,12 @@ personas/                                  domain layer (3 seeded + template)
 personas/sources/<persona>/                the vetted sources each persona was built from
 initiatives/INIT-001-typing-holds/         blood typing holds: feedback, discovery, design
 initiatives/INIT-002-cross-instrument-reproducibility/   flow cytometry: feedback, discovery, design
+initiatives/INIT-003-imaging-flow-cytometer/  started from one sentence: "a flow cytometer that has imaging capabilities"
 checks/checks.py                           persona, intake (Gate 1), plan, trace, provenance
 checks/review.py                           human review log and acceptance metrics
 examples/INIT-001/                         clinical analyzer, middleware, planted failures
 examples/INIT-002/                         flow cytometry
+examples/INIT-003/                         new initiative from one sentence: intake stops on 5 blocking questions
 tests/                                     guardrail tests
 docs/DEMO.md                               live demo script
 ```

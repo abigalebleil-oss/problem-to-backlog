@@ -18,7 +18,7 @@ anything approved.
 |---|---|---|
 | Company | `knowledge/company.md` | `K-n` |
 | Persona | `personas/<id>.md` | `U-`, `VD-`, `REG-`, `C-`, `Q-<PREFIX>-n` |
-| Initiative | `initiatives/<INIT>/discovery.md`, `design.md`, `feedback/*.md` | `F-n`, `D-n`, `DC-n`, verbatim quotes |
+| Initiative | `initiatives/<INIT>/discovery.md`, `design.md`, `feedback/*.md` (a new one starts from the user's own brief) | `F-n`, `D-n`, `DC-n`, verbatim quotes |
 
 If a fact is not in these files, it is an **assumption** (list it) or a **question** (ask it).
 Never invent an ID. Never paraphrase inside quotation marks. Do not fill gaps with general
@@ -29,19 +29,53 @@ Write all outputs to `initiatives/<INIT>/runs/<primary-persona>/`.
 
 ---
 
-## Step 0 — Select your persona
-1. List the personas in `personas/` (skip `_template.md`) with their title, top value driver,
-   status, and how many of their sources are vetted (`python checks/checks.py persona <file>`).
-2. Ask the user (use AskUserQuestion if available):
-   - **Primary persona**: whose product this is. Their value drivers rank the work and their
-     requirement fields are mandatory.
-   - **Consulted personas** (zero or more): adjacent teams whose constraints the plan must honor.
-     This is where cross-team alignment happens.
-   - Or **Create your own**: run the `create-persona` skill, then return here.
-3. Ask which initiative to run (folders in `initiatives/`).
-4. Read every selected persona, `knowledge/company.md`, and all initiative files.
-5. If a selected persona has unvetted sources, say so before continuing: the plan can be
-   drafted, but citations resting on those sources will be flagged until the owner vets them.
+## Step 0 — Set up the run
+The persona is the foundation: it carries the domain's guardrails. The initiative is whatever the
+user wants requirements for, defined by them. Ask one thing at a time (AskUserQuestion if
+available), in this order.
+
+**0.1 Choose your persona, or build your own.**
+List the personas in `personas/` (skip `_template.md`) with their title, top value driver,
+status, and how many of their sources are vetted (`python checks/checks.py persona <file>`). Ask:
+- **Primary persona**: whose product this is. Their value drivers rank the work and their
+  requirement fields are mandatory.
+- **Consulted personas** (zero or more): adjacent teams whose constraints the plan must honor.
+  This is where cross-team alignment happens.
+- Or **Build your own**: run the `create-persona` skill, then return here.
+
+If a selected persona has unvetted sources, say so: the plan can be drafted, but citations
+resting on those sources will be flagged until the owner vets them.
+
+**0.2 Choose an initiative, or start a new one.**
+List the folders in `initiatives/` with each one's problem statement in one line, plus
+**Start a new initiative**.
+
+**0.3 Any additional guardrails?**
+Show the persona guardrails already in force (each selected persona's non-negotiables `C-` and
+requirement fields, and the company rules) in a short list. Then ask: "Anything else this work
+must respect? For example a regulation, a release date, a system or team it must not affect, or
+a rule that can't change." Each answer becomes a design constraint `DC-n` (step 0.4). "None" is
+a valid answer.
+
+**0.4 What are we writing requirements for?**
+- **New initiative:** ask exactly "What are we trying to write requirements for?" and let the
+  user answer in their own words. Then create `initiatives/INIT-<next number>-<short-slug>/`:
+  - `feedback/00_po_brief.md`: the user's words verbatim, under a heading naming the persona and
+    date. This is the only evidence; quote from it verbatim or not at all.
+  - `discovery.md`: `## Problem statement` (the user's words), `## Findings` with an `F-n` line
+    ONLY for each fact the user actually stated, each ending `[source: 00_po_brief.md]`, and
+    `## Not yet known` listing what discovery would normally establish. Never invent findings,
+    users, numbers or quotes.
+  - `design.md`: `## Proposed design elements` with a `D-n` line only for design the user
+    described (none is fine; say "No design yet"), and `## Design constraints` with the `DC-n`
+    guardrails from 0.3.
+  Show the user the files and say plainly: with no discovery or design, the intake will be
+  mostly questions and assumptions. That is the guardrail working, not a gap.
+- **Existing initiative:** ask "Which part of it are we writing requirements for?" and append
+  any 0.3 guardrails to its `design.md` under `## Design constraints` as new `DC-n` lines,
+  marked "(added <date>)".
+
+**0.5 Read** every selected persona, `knowledge/company.md`, and all initiative files.
 
 ## Step 1 — Intake → `01_intake.md` · **GATE 1**
 Do not draft any plan yet. Produce only:
@@ -144,7 +178,8 @@ Rules:
    at least one Given / when / then acceptance criterion a QA engineer can test without asking.
 3. Every requirement is one "shall" behavior (`K-8`) and carries every field the primary persona requires.
 4. Every non-negotiable constraint of the primary **and** consulted personas appears in
-   Cross-team alignment. Never weaken one to make the plan fit. If a design element conflicts
+   Cross-team alignment. Every guardrail the user added in step 0.3 (`DC-n`) is cited in the
+   `Derived from` of at least one requirement, or raised as an open question. Never weaken one to make the plan fit. If a design element conflicts
    with a constraint, write CONFLICT and name the decision owner. Do not resolve it yourself.
 5. No banned terms (company and persona lists) in requirements or acceptance criteria. If an input
    is vague, propose a number, mark it `[PROPOSED]` (`K-9`), and add an assumption.
