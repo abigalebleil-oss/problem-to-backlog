@@ -99,7 +99,7 @@ The check never approves anything. A pass means "worth a human's time", and it a
 
 ## Quick start
 ```bash
-python3 -m pytest -q                                                           # 21 tests
+python3 -m pytest -q                                                           # 22 tests
 python3 checks/checks.py persona    personas/flow-cytometry.md
 python3 checks/checks.py intake     examples/INIT-001/clinical-analyzer/01_intake.md
 python3 checks/checks.py plan       examples/INIT-001/clinical-analyzer/03_plan.md
@@ -126,6 +126,7 @@ checks/review.py                           human review log and acceptance metri
 examples/INIT-001/                         clinical analyzer, middleware, planted failures
 examples/INIT-002/                         flow cytometry
 examples/INIT-003/                         new initiative from one sentence: intake stops on 5 blocking questions
+examples/create-persona/                   interview notes for a live create-persona demo (clinical lab QC) and the finished backup
 tests/                                     guardrail tests
 docs/DEMO.md                               live demo script
 ```

@@ -31,10 +31,16 @@ def test_template_fails_until_filled_in():
     assert checks.check_persona(ROOT / "personas" / "_template.md") == 1
 
 
-def test_three_personas_with_unique_prefixes():
+def test_seeded_personas_present_with_unique_prefixes():
+    # Teams add their own personas with create-persona, so check the seeded three are
+    # present and that every persona's prefix is unique, not an exact list.
     personas = kb.list_personas()
-    assert {p.id for p in personas} == {"clinical-analyzer", "flow-cytometry", "middleware-reporting"}
-    assert len({p.prefix for p in personas}) == 3
+    assert {"clinical-analyzer", "flow-cytometry", "middleware-reporting"} <= {p.id for p in personas}
+    assert len({p.prefix for p in personas}) == len(personas)
+
+
+def test_create_persona_backup_passes():
+    assert checks.check_persona(ROOT / "examples" / "create-persona" / "clinical-qc.md") == 0
 
 
 # ---------- Gate 1 ----------

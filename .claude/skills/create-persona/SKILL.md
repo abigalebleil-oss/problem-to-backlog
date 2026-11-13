@@ -37,6 +37,10 @@ the evidence.
    - **Banned terms**: "Which words in a requirement make QA or regulatory push back?"
    - **Always ask**: "What do you ask first when someone brings you a new feature?"
    - **Sign-offs**: "Who must approve before work enters your backlog?"
+
+   If the user gives you all the answers at once (pasted notes), don't re-ask each section: save
+   them as the interview source, play back a one-screen summary by section, and ask once
+   "what's wrong or missing?"
 4. Write `personas/<id>.md` from `personas/_template.md`. End every ID line with
    `[src: S-<PREFIX>-n]` naming the source(s) it came from. If a line comes from your general
    knowledge and no source supports it, do not write it; ask the interviewee instead.
